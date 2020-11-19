@@ -6,7 +6,7 @@ async function connect() {
         return global.connection;
 
     const mysql = require("mysql2/promise");
-    const connectionString = 'mysql://aluno.unip:semsenha22@mysql741.umbler.com:41890/db_pim';;
+    const connectionString = 'mysql://aluno.unip:semsenha22@mysql741.umbler.com:41890/db_pim';
     const connection = await mysql.createConnection(connectionString);
     global.connection = connection;
     return connection;

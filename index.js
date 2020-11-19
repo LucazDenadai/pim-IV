@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const port = 3000; //porta padrão
 
-const db = require("../db/db");
+const db = require("./db/db.js");
 
 //configurando o body parser para pegar POSTS mais tarde
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -186,4 +186,3 @@ router.delete('/cliente/:id', async (req, res) => {
 
 //inicia o servidor
 app.listen(port);
-console.log('Api iniciada na porta: ' + port);
