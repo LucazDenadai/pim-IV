@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const port = 3000; //porta padrão
-
+const cors = require('cors');
 const db = require("./db/db.js");
 
 //configurando o body parser para pegar POSTS mais tarde
@@ -12,11 +12,11 @@ app.use(bodyParser.json());
 
 //definindo as rotas
 const router = express.Router();
-const cors = require('cors');
+
 app.use((req, res, next) => {
-	//Qual site tem permissão de realizar a conexão, no exemplo abaixo está o "*" indicando que qualquer site pode fazer a conexão
+    //console.log("Acessou o Middleware!");
     res.header("Access-Control-Allow-Origin", "*");
-	//Quais são os métodos que a conexão pode realizar na API
+    res.header("Access-Control-Allow-Headers", "*");
     res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE');
     app.use(cors());
     next();
@@ -27,18 +27,30 @@ app.use('/', router);
 
 //Método de login
 router.post('/login', async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     try {
-        const usuario = req.body.usuario.substring(0, 150);
-        const senha = req.body.senha.substring(0, 150);
+        var usuario = "";
+        var senha = "";
 
-        if (usuario == null || senha == null)
+        if (req.body.usuario)
+            usuario = req.body.usuario.substring(0, 150);
+        else
+            res.status(400).send({ message: 'Necessário preencher o usuario' });
+
+        if (req.body.senha)
+            senha = req.body.senha.substring(0, 150);
+        else
+            res.status(400).send({ message: 'Necessário preencher a senha' });
+
+        if (usuario == "" || senha == "")
             res.status(400).send({ message: 'E-mail ou senha inválidos' });
 
         const result = await db.login(usuario, senha);
-        if (result.length == 0)
+
+        if (!result[0][0])
             res.status(401).send({ message: 'E-mail ou senha inválidos' });
         else
-            res.status(200).send(true);
+            res.status(200).send(result[0][0]);
     } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
@@ -52,8 +64,7 @@ router.get('/usuarios/:id?', async (req, res) => {
             res.status(200).send(result);
         else
             res.status(200).send({ message: 'Não foram encontrados registros' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 });
@@ -66,8 +77,7 @@ router.delete('/usuarios/:id', async (req, res) => {
             res.status(200).send({ message: 'Registro não encontrado' });
         else
             res.status(200).send({ message: 'Deletado com sucesso' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 })
@@ -77,10 +87,11 @@ router.post('/usuarios', async (req, res) => {
     try {
         const usuario = req.body.usuario.substring(0, 150);
         const senha = req.body.senha.substring(0, 11);
-        await db.insertUsuario({ usuario: usuario, senha: senha, });
+        const nome = req.body.nome.substring(0, 11);
+
+        await db.insertUsuario({ usuario: usuario, senha: senha, nome: nome});
         res.status(201).send({ message: 'Criado com sucesso' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 
@@ -89,13 +100,26 @@ router.post('/usuarios', async (req, res) => {
 //atualização de usuario
 router.put('/usuarios/:id', async (req, res) => {
     try {
-        var result = await db.updateUsuario(req.params.id, { senha: req.params.senha, usuario: req.params.usuario });
+        var usuario = "";
+        var senha = "";
+        var nome = "";
+
+        if (req.body.usuario) {
+            usuario = req.body.usuario.substring(0, 150);
+        }
+        if (req.body.senha) {
+            senha = req.body.senha.toString();
+        }
+        if (req.body.nome) {
+            nome = req.body.nome.toString();
+        }
+        var result = await db.updateUsuario(req.params.id, { senha: senha, usuario: usuario, nome: nome });
+
         if (result[0].affectedRows == 0)
             res.status(200).send({ message: 'Registro não encontrado' });
         else
             res.status(200).send({ message: 'Atualizado com sucesso' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 })
@@ -108,8 +132,7 @@ router.get('/cliente/:id?', async (req, res) => {
             res.status(200).send({ message: 'Nenhum registro encontrado' });
         else
             res.status(200).send(result);
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 });
@@ -137,11 +160,10 @@ router.post('/cliente', async (req, res) => {
             idUsuario: idUsuario,
         });
         res.status(201).send({ message: 'Criado com sucesso' });
-    }
-    catch (ex) {
-        if(ex.message.includes('tbcliente.uk_tbcliente_01'))
+    } catch (ex) {
+        if (ex.message.includes('tbcliente.uk_tbcliente_01'))
             res.status(400).send({ message: 'E-mail já cadastrado' });
-        else if(ex.message.includes('tbcliente.uk_tbcliente_02'))
+        else if (ex.message.includes('tbcliente.uk_tbcliente_02'))
             res.status(400).send({ message: 'CPF/CNPJ já cadastrado' });
         else
             res.status(400).send({ message: ex.message });
@@ -152,30 +174,52 @@ router.post('/cliente', async (req, res) => {
 router.put('/cliente/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const nome = req.body.nome.substring(0, 150);
-        const email = req.body.email.substring(0, 150);
-        const telcli_01 = req.body.telcli_01.substring(0, 150);
-        const telcli_02 = req.body.telcli_02.substring(0, 150);
-        const datanascimento = req.body.datanascimento.substring(0, 150);
-        const idendereco = req.body.idendereco;
-        const cpfcnpj = req.body.cpfcnpj.substring(0, 150);
-        const idUsuario = req.body.idUsuario;
+
+        var nome = "";
+        var email = "";
+        var telcli_01 = "";
+        var telcli_02 = "";
+        var datanascimento = "";
+        var idendereco = "";
+        var cpfcnpj = "";
+        var idUsuario = "";
+        var cliativo = "";
+
+        if (req.body.nome)
+            nome = req.body.nome.substring(0, 150);
+
+        if (req.body.email)
+            email = req.body.email.substring(0, 150);
+
+        if (req.body.telcli_01)
+            req.body.telcli_01.substring(0, 150);
+
+        if (req.body.telcli_02)
+            req.body.telcli_02.substring(0, 150);
+
+        if (req.body.datanascimento)
+            datanascimento = req.body.datanascimento.substring(0, 150);
+
+        if (req.body.cpfcnpj)
+            cpfcnpj = req.body.cpfcnpj.substring(0, 150);
+
+        if (req.body.cliativo)
+            cliativo = req.body.cliativo.substring(0, 150);
 
         await db.updateCliente(
-            id,
-            {
-                nome: nome,
-                email: email,
-                telcli_01: telcli_01,
-                telcli_02: telcli_02,
-                datanascimento: datanascimento,
-                idendereco: idendereco,
-                cpfcnpj: cpfcnpj,
-                idUsuario: idUsuario,
-            });
+            id, {
+            nome: nome,
+            email: email,
+            telcli_01: telcli_01,
+            telcli_02: telcli_02,
+            datanascimento: datanascimento,
+            idendereco: idendereco,
+            cpfcnpj: cpfcnpj,
+            idUsuario: idUsuario,
+            cliativo: cliativo
+        });
         res.status(201).send({ message: 'Atualizado com sucesso' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 });
@@ -187,8 +231,7 @@ router.delete('/cliente/:id', async (req, res) => {
 
         await db.deleteCliente(id);
         res.status(201).send({ message: 'Excluído com sucesso' });
-    }
-    catch (ex) {
+    } catch (ex) {
         res.status(400).send({ message: ex.message });
     }
 })

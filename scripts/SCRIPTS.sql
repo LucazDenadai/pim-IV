@@ -12,7 +12,7 @@ MySQL - 8.0.22 : Database - db_pim
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`db_pim` /*!40100 DEFAULT CHARACTER SET utf8mb4*/ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`db_pim` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
 USE `db_pim`;
 
@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `tbcliente`;
 CREATE TABLE `tbcliente` (
   `IdCliente` bigint unsigned NOT NULL AUTO_INCREMENT,
   `NomCli` varchar(40) NOT NULL,
-  `Email` varchar(80) CHARACTER SET utf8mb4 NOT NULL,
+  `Email` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `TelCli_01` varchar(14) DEFAULT NULL,
   `TelCli_02` varchar(14) DEFAULT NULL,
   `DataCadastro` datetime DEFAULT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE `tbcliente` (
   KEY `fk_tbcliente_02` (`IdEndereco`),
   CONSTRAINT `fk_tbcliente_01` FOREIGN KEY (`IdUsuario`) REFERENCES `tbusuarios` (`IdUsuario`),
   CONSTRAINT `fk_tbcliente_02` FOREIGN KEY (`IdEndereco`) REFERENCES `tbendereco` (`IdEndereco`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbcliente` */
 
@@ -61,7 +61,7 @@ CREATE TABLE `tbendereco` (
   `Cidade` varchar(255) DEFAULT NULL,
   `Estado` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`IdEndereco`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbendereco` */
 
@@ -85,7 +85,7 @@ CREATE TABLE `tbmovimentooperacoes` (
   KEY `fk_tbmovope_02` (`IdCliente`),
   CONSTRAINT `fk_tbmovope_01` FOREIGN KEY (`IdOperacao`) REFERENCES `tbtipooperacoes` (`IDTIPOOPERACOES`),
   CONSTRAINT `fk_tbmovope_02` FOREIGN KEY (`IdCliente`) REFERENCES `tbcliente` (`IdCliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbmovimentooperacoes` */
 
@@ -105,7 +105,7 @@ CREATE TABLE `tboperadores` (
   `Email` varchar(50) DEFAULT NULL,
   `IdUsuario` int DEFAULT NULL,
   PRIMARY KEY (`IdOperadores`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tboperadores` */
 
@@ -124,7 +124,7 @@ CREATE TABLE `tbsuboperacoes` (
   KEY `fk_tbsubope_02` (`IdMovOpe`),
   CONSTRAINT `fk_tbsubope_01` FOREIGN KEY (`IdCliente`) REFERENCES `tbcliente` (`IdCliente`),
   CONSTRAINT `fk_tbsubope_02` FOREIGN KEY (`IdMovOpe`) REFERENCES `tbmovimentooperacoes` (`IdMovOpe`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbsuboperacoes` */
 
@@ -136,7 +136,7 @@ CREATE TABLE `tbtipooperacoes` (
   `IDTIPOOPERACOES` int NOT NULL AUTO_INCREMENT,
   `DESCRICAO` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`IDTIPOOPERACOES`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbtipooperacoes` */
 
@@ -154,15 +154,16 @@ CREATE TABLE `tbusuarios` (
   `Usuario` varchar(50) DEFAULT NULL,
   `Senha` varchar(50) DEFAULT NULL,
   `TipoUsuario` char(1) DEFAULT NULL,
+  `Nome` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`IdUsuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 ;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*Data for the table `tbusuarios` */
 
-insert  into `tbusuarios`(`IdUsuario`,`Usuario`,`Senha`,`TipoUsuario`) values 
-(6,'admin','admin','1'),
-(7,'vinicius','1111','2'),
-(8,'lucaz','1111','2');
+insert  into `tbusuarios`(`IdUsuario`,`Usuario`,`Senha`,`TipoUsuario`,`Nome`) values 
+(6,'admin','admin','1',NULL),
+(7,'vinicius','1111','2',NULL),
+(8,'lucaz','1111','2',NULL);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
